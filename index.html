@@ -3,7 +3,7 @@
 <head>
 <style type="text/css">
 	#c {
-		background: url(bg.png);
+		background: url(arcade.png);
 	}
 </style>
 <script type="text/javascript">
@@ -35,7 +35,7 @@ function init() {
 		if (Math.random() > 0.9) {
 			badguyQueue.push(new BadGuy());
 		}
-		ctx.clearRect(0, 0, 250, 114);
+		ctx.clearRect(0, 0, 250, 164);
 		for (var i = 0; i < badguyQueue.length; i++) {
 			for (var j = 0; j < blastQueue.length; j++) {
 				badguyQueue[i].handleBlast(blastQueue[j].blastX, blastQueue[j].blastY);
@@ -66,7 +66,7 @@ function Redrawable() {
 Redrawable.prototype.draw = function(ctx) {}
 
 function BadGuy() {
-	this.xPos = Math.floor(Math.random()*230) + 10;
+	this.xPos = Math.floor(Math.random()*195) + 8;
 	this.yPos = 14;
 	this.hasBeenHit = false;
 	this.dim = 12;
@@ -116,9 +116,9 @@ Blast.prototype.draw = function(ctx) {
 	ctx.beginPath();
 
 	if (e.button == 2) {
-		ctx.moveTo(245, 109);
+		ctx.moveTo(209, 109);
 	} else {
-		ctx.moveTo(5, 109);
+		ctx.moveTo(8, 109);
 	}
 	ctx.lineTo(e.offsetX, e.offsetY);
 
@@ -134,10 +134,9 @@ Blast.prototype.draw = function(ctx) {
 	}
 }
 
-
 </script>
 </head>
 <body onload="init()">
-<canvas id="c" width="250" height="114">go download chrome</canvas>
+<canvas id="c" width="225" height="164">go download chrome</canvas>
 </body>
 </html>
