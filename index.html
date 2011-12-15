@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+	#c {
+		background: url(bg.png);
+	}
+</style>
+<script type="text/javascript">
+var blastQueue = [];
+var badguyQueue = [];
+var badguy_img = new Image();
+var die1_img = new Image();
+var die2_img = new Image();
+var die3_img = new Image();
+var die4_img = new Image();
+function init() {
+	var c, ctx;
+
+	badguy_img.src = "badguy.png";
+	die1_img.src = "die1.png";
+	die2_img.src = "die2.png";
+	die3_img.src = "die3.png";
+	die4_img.src = "die4.png";
+
+	c = document.getElementById("c");
+	ctx = c.getContext("2d");
+
+	c.oncontextmenu = function() {return false}
+	c.addEventListener("mousedown", function(e) {
+		blastQueue.push(new Blast(e));
+	});
+
+	var redraw = function() {
+		if (Math.random() > 0.93) {
+			badguyQueue.push(new BadGuy());
+		}
+		ctx.clearRect(0, 0, 250, 114);
+		for (var i = 0; i < badguyQueue.length; i++) {
+			for (var j = 0; j < blastQueue.length; j++) {
+				badguyQueue[i].handleBlast(blastQueue[j].blastX, blastQueue[j].blastY);
+			}
+		}
+		blastQueue = drawQueue(blastQueue, ctx);
+		badguyQueue = drawQueue(badguyQueue, ctx);
+		setTimeout(redraw,200);
+	}
+	redraw();
+}
+
+function drawQueue(q, ctx) {
+	for (var i = 0; i < q.length; i++) {
+		q[i].draw(ctx);
+		if (q[i].expired) {
+			delete q[i];
+		}
+	}
+	return q.filter(function(o) { return o });
+}
+
+// redraw classes
+function Redrawable() {
+	this.expired = false;
+	this.drawCount = 0;
+}
+Redrawable.prototype.draw = function(ctx) {}
+
+function BadGuy() {
+	this.xPos = Math.floor(Math.random()*230) + 10;
+	this.yPos = 14;
+	this.hasBeenHit = false;
+	this.dim = 12;
+	this.dieCount = 0;
+}
+BadGuy.prototype = new Redrawable();
+BadGuy.prototype.draw = function(ctx) {
+	if (this.hasBeenHit) {
+		if (this.dieCount == 0) {
+			ctx.drawImage(die1_img, this.xPos - 1, this.yPos - 1);
+		} else if (this.dieCount < 2) {
+			ctx.drawImage(die2_img, this.xPos - 4, this.yPos - 5);
+		} else if (this.dieCount < 8) {
+			ctx.drawImage(die3_img, this.xPos - 10, this.yPos - 1);
+		} else if (this.dieCount < 10) {
+			ctx.drawImage(die4_img, this.xPos - 10, this.yPos - 1);
+		} else {
+			this.expired = true;
+		}
+		this.dieCount++;
+	} else {
+		ctx.drawImage(badguy_img, this.xPos + 1, this.yPos + 1);
+		this.yPos++;
+
+		this.drawCount++;
+		if (this.drawCount > 85) {
+			this.expired = true;
+		}
+	}
+}
+BadGuy.prototype.handleBlast = function(bx, by) {
+	if (this.hasBeenHit) return false;
+	if (bx >= this.xPos && bx <= this.xPos + this.dim &&
+		by >= this.yPos && by <= this.yPos + this.dim) {
+		this.hasBeenHit = true;
+	}
+}
+
+function Blast(e) {
+	this.drawEvent = e;
+	this.blastX = e.offsetX;
+	this.blastY = e.offsetY;
+}
+Blast.prototype = new Redrawable();
+Blast.prototype.draw = function(ctx) {
+	var e = this.drawEvent;
+	ctx.beginPath();
+
+	if (e.button == 2) {
+		ctx.moveTo(245, 109);
+	} else {
+		ctx.moveTo(5, 109);
+	}
+	ctx.lineTo(e.offsetX, e.offsetY);
+
+	ctx.strokeStyle = "#00ff00";
+	ctx.lineWidth = 3;
+
+	ctx.stroke();
+	ctx.closePath();
+
+	this.drawCount++;
+	if (this.drawCount > 1) {
+		this.expired = true;
+	}
+}
+
+
+</script>
+</head>
+<body onload="init()">
+<canvas id="c" width="250" height="114">go download chrome</canvas>
+</body>
+</html>
