@@ -2,9 +2,26 @@
 <html>
 <head>
 <style type="text/css">
-	#c {
-		background: url(arcade.png);
+	#arcadeCanvas {
+		background: url(arcade.png) no-repeat left top;
+		/* Don't set margins or padding on the canvas
+		   because it will mess up the mouse event positioning.
+		   Instead, apply styles to the arcadeContainer */
+		padding: 0px;
+		margin: 0px;
+		/* Require non-static positioning to get mouse coordinates right in Firefox 
+		   since Firefox uses event.layerX instead of event.offsetX. 
+		   (Tested in Firefox 8.0.1) */
+		position: relative;
 	}
+	#arcadeContainer{
+		padding: 10px 20px;
+		margin: 30px;
+	}
+	.postContainer{
+    padding: 30px 10px;
+    margin: 20px;
+  }
 </style>
 <script type="text/javascript">
 var blastQueue = [];
@@ -23,8 +40,19 @@ function init() {
 	die3_img.src = "die3.png";
 	die4_img.src = "die4.png";
 
-	c = document.getElementById("c");
+	c = document.getElementById("arcadeCanvas");
+	
+	if (!c.getContext) {
+    console.log('Error: no canvas.getContext!');
+    return;
+  }
+  
 	ctx = c.getContext("2d");
+	
+  if (!ctx) {
+    console.log('Error: getContext failed!');
+    return;
+  }
 
 	c.oncontextmenu = function() {return false}
 	c.addEventListener("mousedown", function(e) {
@@ -32,13 +60,13 @@ function init() {
 	});
 
 	var redraw = function() {
-		if (Math.random() > 0.9) {
+		if (Math.random() < 0.10) {
 			badguyQueue.push(new BadGuy());
 		}
 		ctx.clearRect(0, 0, 250, 164);
 		for (var i = 0; i < badguyQueue.length; i++) {
 			for (var j = 0; j < blastQueue.length; j++) {
-				badguyQueue[i].handleBlast(blastQueue[j].blastX, blastQueue[j].blastY);
+				badguyQueue[i].handleBlast(blastQueue[j].x, blastQueue[j].y);
 			}
 		}
 		blastQueue = drawQueue(blastQueue, ctx);
@@ -106,21 +134,29 @@ BadGuy.prototype.handleBlast = function(bx, by) {
 }
 
 function Blast(e) {
-	this.drawEvent = e;
-	this.blastX = e.offsetX;
-	this.blastY = e.offsetY;
+	this.button = e.button; // mouse button
+	
+	if (e.offsetX || e.offsetX == 0) { // Opera, Chrome
+    this.x = e.offsetX;
+    this.y = e.offsetY;
+  } else if (e.layerX || e.layerX == 0) { // Firefox
+    // Canvas must be non-staticly positioned for layerX to be 
+    // the same as offsetX (css e.g. "position:relative;")
+    this.x = e.layerX;
+    this.y = e.layerY;
+  }
 }
+
 Blast.prototype = new Redrawable();
 Blast.prototype.draw = function(ctx) {
-	var e = this.drawEvent;
 	ctx.beginPath();
 
-	if (e.button == 2) {
+	if (this.button == 2) {
 		ctx.moveTo(209, 109);
 	} else {
 		ctx.moveTo(8, 109);
 	}
-	ctx.lineTo(e.offsetX, e.offsetY);
+	ctx.lineTo(this.x, this.y);
 
 	ctx.strokeStyle = "#00ff00";
 	ctx.lineWidth = 3;
@@ -137,6 +173,11 @@ Blast.prototype.draw = function(ctx) {
 </script>
 </head>
 <body onload="init()">
-<canvas id="c" width="225" height="164">go download chrome</canvas>
+  <div class="postContainer">
+    <!-- Test embedding the arcade -->
+    <div id="arcadeContainer">
+      <canvas id="arcadeCanvas" width="225" height="164">Go download <a href="https://www.google.com/chrome/">chrome</a></canvas>
+    </div>
+  </div>
 </body>
 </html>
