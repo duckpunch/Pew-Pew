@@ -18,6 +18,18 @@
 		padding: 10px 20px;
 		margin: 30px;
 	}
+	#arcadeScore {
+	  position: relative;
+	  top: 134px;
+	  left: 80px;
+	  width: 130px;
+	  height: 20px;
+	  color: #33FF33;
+	  z-index: 50;
+	  text-align: right;
+	  font-size: 12px;
+	  font-family: monospace, sans-serif;
+	}
 	.postContainer{
     padding: 30px 10px;
     margin: 20px;
@@ -31,6 +43,8 @@ var die1_img = new Image();
 var die2_img = new Image();
 var die3_img = new Image();
 var die4_img = new Image();
+var arcadeScore = 0;
+var scoreElement = null;
 function init() {
 	var c, ctx;
 
@@ -40,6 +54,7 @@ function init() {
 	die3_img.src = "die3.png";
 	die4_img.src = "die4.png";
 
+  scoreElement = document.getElementById("arcadeScore");
 	c = document.getElementById("arcadeCanvas");
 	
 	if (!c.getContext) {
@@ -122,6 +137,7 @@ BadGuy.prototype.draw = function(ctx) {
 		this.drawCount++;
 		if (this.drawCount > 85) {
 			this.expired = true;
+			updateArcadeScore(-1);
 		}
 	}
 }
@@ -130,7 +146,13 @@ BadGuy.prototype.handleBlast = function(bx, by) {
 	if (bx >= this.xPos && bx <= this.xPos + this.dim &&
 		by >= this.yPos && by <= this.yPos + this.dim) {
 		this.hasBeenHit = true;
+		updateArcadeScore(100);
 	}
+}
+
+function updateArcadeScore(points) {
+  arcadeScore += points;
+  scoreElement.innerHTML = arcadeScore;
 }
 
 function Blast(e) {
@@ -176,6 +198,7 @@ Blast.prototype.draw = function(ctx) {
   <div class="postContainer">
     <!-- Test embedding the arcade -->
     <div id="arcadeContainer">
+      <div id="arcadeScore">0</div>
       <canvas id="arcadeCanvas" width="225" height="164">Go download <a href="https://www.google.com/chrome/">chrome</a></canvas>
     </div>
   </div>
